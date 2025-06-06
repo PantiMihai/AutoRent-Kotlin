@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "761548083869",
+    "project_id": "autorent-cc2cc",
+    "storage_bucket": "autorent-cc2cc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761548083869:android:5a7da08221e0e6d4e23a74",
+        "android_client_info": {
+          "package_name": "com.example.autorent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiva-CPYwExL4FKT-GKTMlaGnaq4EQut0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

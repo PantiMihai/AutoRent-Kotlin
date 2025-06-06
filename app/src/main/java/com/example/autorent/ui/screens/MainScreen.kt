@@ -4,13 +4,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.example.autorent.data.Car
+import com.example.autorent.database.Booking
 import com.example.autorent.ui.components.BottomNavItem
 import com.example.autorent.ui.components.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit = {}) {
     var selectedNavItem by remember { mutableStateOf(BottomNavItem.CATALOG) }
+    var selectedCar by remember { mutableStateOf<Car?>(null) }
+    var showBookingSummary by remember { mutableStateOf(false) }
+    var carToBook by remember { mutableStateOf<Car?>(null) }
+    var showEndBookingScreen by remember { mutableStateOf(false) }
+    var bookingToEnd by remember { mutableStateOf<Booking?>(null) }
     
     Scaffold(
         bottomBar = {
@@ -25,21 +32,72 @@ fun MainScreen() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when (selectedNavItem) {
-                BottomNavItem.HOME -> {
-                    // For now, show the old car list screen as home
-                    CarListScreen()
+            when {
+                showEndBookingScreen && bookingToEnd != null -> {
+                    EndBookingScreen(
+                        booking = bookingToEnd!!,
+                        onBackClick = {
+                            showEndBookingScreen = false
+                            bookingToEnd = null
+                        },
+                        onTripEnded = {
+                            showEndBookingScreen = false
+                            bookingToEnd = null
+                        }
+                    )
                 }
-                BottomNavItem.CATALOG -> {
-                    CatalogScreen()
+                showBookingSummary && carToBook != null -> {
+                    CarBookingSummaryScreen(
+                        car = carToBook!!,
+                        onBackClick = { 
+                            showBookingSummary = false
+                            carToBook = null
+                        },
+                        onBookingConfirmed = {
+                            showBookingSummary = false
+                            carToBook = null
+                            selectedCar = null
+                        }
+                    )
                 }
-                BottomNavItem.FAVORITES -> {
-                    // TODO: Create favorites screen
-                    PlaceholderScreen("Favorites")
+                selectedCar != null -> {
+                    CarDetailsScreen(
+                        car = selectedCar!!,
+                        onBackClick = { selectedCar = null },
+                        onBookNow = { car ->
+                            carToBook = car
+                            showBookingSummary = true
+                        }
+                    )
                 }
-                BottomNavItem.PROFILE -> {
-                    // TODO: Create profile screen
-                    PlaceholderScreen("Profile")
+                else -> {
+                when (selectedNavItem) {
+                    BottomNavItem.HOME -> {
+                        HomeScreen(
+                            onCarClick = { car -> selectedCar = car },
+                            onSearchClick = { selectedNavItem = BottomNavItem.CATALOG },
+                            onViewAllClick = { selectedNavItem = BottomNavItem.CATALOG }
+                        )
+                    }
+                    BottomNavItem.CATALOG -> {
+                        CatalogScreen(
+                            onCarClick = { car -> selectedCar = car }
+                        )
+                    }
+                    BottomNavItem.FAVORITES -> {
+                        FavoritesScreen(
+                            onCarClick = { car -> selectedCar = car }
+                        )
+                    }
+                    BottomNavItem.PROFILE -> {
+                        MyAccountScreen(
+                            onLogout = onLogout,
+                            onEndTrip = { booking ->
+                                bookingToEnd = booking
+                                showEndBookingScreen = true
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -58,4 +116,4 @@ fun PlaceholderScreen(title: String) {
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
     }
-} 
+}}

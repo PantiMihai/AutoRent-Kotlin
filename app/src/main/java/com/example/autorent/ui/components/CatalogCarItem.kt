@@ -24,10 +24,11 @@ fun CatalogCarItem(
     isSelected: Boolean = false,
     onCarClick: () -> Unit = {},
     onFavoriteClick: () -> Unit = {},
-    isFavorite: Boolean = false
+    isFavorite: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(240.dp),
         shape = RoundedCornerShape(16.dp),

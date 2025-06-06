@@ -5,13 +5,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.autorent.ui.screens.LoginScreen
+import com.example.autorent.ui.screens.MainScreen
+import com.example.autorent.ui.screens.RegisterScreen
 import com.example.autorent.ui.theme.AutoRentTheme
+import com.example.autorent.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,11 +22,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AutoRentTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AutoRentApp()
                 }
             }
         }
@@ -31,17 +34,57 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AutoRentTheme {
-        Greeting("Android")
+fun AutoRentApp() {
+    val authViewModel: AuthViewModel = viewModel()
+    val currentUser by authViewModel.currentUser.collectAsState()
+    var isLoggedIn by remember { mutableStateOf(false) }
+    var showRegisterScreen by remember { mutableStateOf(false) }
+    
+    // Check authentication state
+    LaunchedEffect(currentUser) {
+        isLoggedIn = currentUser != null
+    }
+    
+    // Initialize with current authentication state
+    LaunchedEffect(Unit) {
+        isLoggedIn = authViewModel.isUserLoggedIn()
+    }
+    
+    when {
+        isLoggedIn -> {
+            MainScreen(
+                onLogout = { 
+                    authViewModel.signOut()
+                    isLoggedIn = false
+                    showRegisterScreen = false
+                }
+            )
+        }
+        showRegisterScreen -> {
+            RegisterScreen(
+                onRegisterSuccess = { 
+                    isLoggedIn = true 
+                    showRegisterScreen = false
+                },
+                onNavigateToLogin = {
+                    showRegisterScreen = false
+                    authViewModel.clearAuthState()
+                },
+                authViewModel = authViewModel
+            )
+        }
+        else -> {
+            LoginScreen(
+                onLoginSuccess = { 
+                    isLoggedIn = true 
+                    showRegisterScreen = false
+                },
+                onNavigateToRegister = {
+                    showRegisterScreen = true
+                    authViewModel.clearAuthState()
+                },
+                authViewModel = authViewModel
+            )
+        }
     }
 }

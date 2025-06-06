@@ -14,23 +14,28 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.autorent.data.Car
 import com.example.autorent.ui.components.CatalogCarItem
 import com.example.autorent.viewmodel.CarViewModel
+import com.example.autorent.viewmodel.CarViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogScreen(
-    viewModel: CarViewModel = viewModel(),
+    viewModel: CarViewModel = viewModel(
+        factory = CarViewModelFactory(LocalContext.current.applicationContext as android.app.Application)
+    ),
     onCarClick: (Car) -> Unit = {}
 ) {
     val cars by viewModel.cars.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedFilter by viewModel.selectedFilter.collectAsState()
-    val favoriteCarIds by viewModel.favoriteCarIds.collectAsState()
+    val favoriteCarIds by viewModel.favoriteCarIds.collectAsState(initial = emptyList())
     val selectedCarsForComparison by viewModel.selectedCarsForComparison.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -191,7 +196,7 @@ fun CatalogScreen(
                                 // Long press or special gesture for comparison, regular click for details
                                 onCarClick(car)
                             },
-                            onFavoriteClick = { viewModel.toggleFavorite(car.id) },
+                            onFavoriteClick = { viewModel.toggleFavorite(car) },
                             isFavorite = favoriteCarIds.contains(car.id)
                         )
                     }
